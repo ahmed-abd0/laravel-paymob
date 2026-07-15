@@ -23,7 +23,7 @@ class Plan extends Model
             'use_transaction_amount' => 'boolean',
             'active' => 'boolean',
             'plan_type' => PlanType::class,
-            'payload' => 'array'
+            'payload' => 'array',
         ];
     }
 
@@ -38,16 +38,19 @@ class Plan extends Model
     public function suspend(): static
     {
         app(PlanManager::class)->suspend($this);
+
         return $this->refresh();
     }
     public function resume(): static
     {
         app(PlanManager::class)->resume($this);
+
         return $this->refresh();
     }
     public function sync(): static
     {
         app(PlanManager::class)->sync($this);
+
         return $this->refresh();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Paymob\Laravel\Support;
 
+use Illuminate\Http\RedirectResponse;
 use Paymob\Laravel\Models\Subscription;
 
 final class Checkout
@@ -13,7 +14,7 @@ final class Checkout
         public readonly ?Subscription $subscription = null
     ) {}
 
-    public function redirect(): \Illuminate\Http\RedirectResponse
+    public function redirect(): RedirectResponse
     {
         return redirect()->away($this->url);
     }

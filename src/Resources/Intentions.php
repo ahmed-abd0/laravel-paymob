@@ -25,7 +25,10 @@ final class Intentions
     public function retrieve(string $clientSecret, ?string $publicKey = null): PaymobResponse
     {
         $publicKey ??= config('paymob.keys.public');
-        if (!$publicKey) throw new ConfigurationException('PAYMOB_PUBLIC_KEY is not configured.');
+        if (! $publicKey) {
+            throw new ConfigurationException('PAYMOB_PUBLIC_KEY is not configured.');
+        }
+
         return $this->http->public('GET', '/v1/intention/element/'.urlencode($publicKey).'/'.urlencode($clientSecret).'/');
     }
 
@@ -37,7 +40,10 @@ final class Intentions
     public function checkoutUrl(string $clientSecret, ?string $publicKey = null): string
     {
         $publicKey ??= config('paymob.keys.public');
-        if (!$publicKey) throw new ConfigurationException('PAYMOB_PUBLIC_KEY is not configured.');
+        if (! $publicKey) {
+            throw new ConfigurationException('PAYMOB_PUBLIC_KEY is not configured.');
+        }
+
         return $this->http->baseUrl().'/unifiedcheckout/?'.http_build_query(['publicKey' => $publicKey, 'clientSecret' => $clientSecret]);
     }
 }

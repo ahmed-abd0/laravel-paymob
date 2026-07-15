@@ -17,5 +17,8 @@ use Illuminate\Support\Facades\Facade;
  */
 final class Paymob extends Facade
 {
-    protected static function getFacadeAccessor(): string { return \Paymob\Laravel\Paymob::class; }
+    protected static function getFacadeAccessor(): string
+    {
+        return \Paymob\Laravel\Paymob::class;
+    }
 }

@@ -9,9 +9,9 @@ it('verifies transaction callback hmac', function () {
         'has_parent_transaction' => false, 'id' => 1, 'integration_id' => 2, 'is_3d_secure' => true, 'is_auth' => false,
         'is_capture' => false, 'is_refunded' => false, 'is_standalone_payment' => true, 'is_voided' => false,
         'order' => ['id' => 3], 'owner' => 4, 'pending' => false,
-        'source_data' => ['pan' => '1234', 'sub_type' => 'Visa', 'type' => 'card'], 'success' => true
+        'source_data' => ['pan' => '1234', 'sub_type' => 'Visa', 'type' => 'card'], 'success' => true,
     ]];
-    $values = ['1000','2026-01-01','EGP','false','false','1','2','true','false','false','false','true','false','3','4','false','1234','Visa','card','true'];
+    $values = ['1000', '2026-01-01', 'EGP', 'false', 'false', '1', '2', 'true', 'false', 'false', 'false', 'true', 'false', '3', '4', 'false', '1234', 'Visa', 'card', 'true'];
     $hmac = hash_hmac('sha512', implode('', $values), 'secret');
     expect(app(SignatureVerifier::class)->transaction($payload, $hmac))->toBeTrue();
 });

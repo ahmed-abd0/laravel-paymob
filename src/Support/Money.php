@@ -8,7 +8,10 @@ final class Money
 {
     public static function cents(int|float|string $amount): int
     {
-        if (!is_numeric($amount)) throw new InvalidArgumentException('Amount must be numeric.');
+        if (! is_numeric($amount)) {
+            throw new InvalidArgumentException('Amount must be numeric.');
+        }
+
         return (int) round(((float) $amount) * 100, 0, PHP_ROUND_HALF_UP);
     }
 

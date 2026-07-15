@@ -16,24 +16,28 @@ final class PlanManager
         $payload = $data instanceof SubscriptionPlanData ? $data->toArray() : $data;
         $payload['webhook_url'] ??= $this->defaultWebhookUrl();
         $response = $this->api->create($payload)->toArray();
+
         return $this->persist($response + $payload);
     }
 
     public function update(Plan $plan, array $data): Plan
     {
         $response = $this->api->update($plan->paymob_id, $data)->toArray();
+
         return $this->persist($response + $data, $plan);
     }
 
     public function suspend(Plan $plan): Plan
     {
         $response = $this->api->suspend($plan->paymob_id)->toArray();
+
         return $this->persist($response + ['is_active' => false], $plan);
     }
 
     public function resume(Plan $plan): Plan
     {
         $response = $this->api->resume($plan->paymob_id)->toArray();
+
         return $this->persist($response + ['is_active' => true], $plan);
     }
 
@@ -41,7 +45,8 @@ final class PlanManager
     {
         $data = $this->api->all()->toArray();
         $plans = Arr::isList($data) ? $data : ($data['results'] ?? $data['data'] ?? []);
-        $remote = collect($plans)->first(fn(array $item) => (string) ($item['id'] ?? '') === (string) $plan->paymob_id);
+        $remote = collect($plans)->first(fn (array $item) => (string) ($item['id'] ?? '') === (string) $plan->paymob_id);
+
         return $remote ? $this->persist($remote, $plan) : $plan;
     }
 
@@ -49,7 +54,10 @@ final class PlanManager
     {
         $data = $this->api->all()->toArray();
         $plans = Arr::isList($data) ? $data : ($data['results'] ?? $data['data'] ?? []);
-        foreach ($plans as $plan) $this->persist($plan);
+        foreach ($plans as $plan) {
+            $this->persist($plan);
+        }
+
         return count($plans);
     }
 
@@ -70,15 +78,19 @@ final class PlanManager
             'use_transaction_amount' => (bool) ($data['use_transaction_amount'] ?? $model->use_transaction_amount ?? false),
             'active' => (bool) ($data['is_active'] ?? $data['active'] ?? $model->active ?? true),
             'webhook_url' => $data['webhook_url'] ?? $model->webhook_url,
-            'payload' => $data
+            'payload' => $data,
         ])->save();
+
         return $model;
     }
 
     private function defaultWebhookUrl(): ?string
     {
-        if (!app('router')->has('paymob.webhooks.subscription')) return null;
+        if (! app('router')->has('paymob.webhooks.subscription')) {
+            return null;
+        }
         $secret = config('paymob.webhooks.subscription_secret');
+
         return route('paymob.webhooks.subscription', $secret ? ['secret' => $secret] : []);
     }
 }

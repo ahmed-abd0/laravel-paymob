@@ -14,8 +14,8 @@ final class PaymobServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/paymob.php', 'paymob');
-        $this->app->singleton(TokenManager::class, fn($app) => new TokenManager($app->make(Factory::class), $app->make(Repository::class)));
+        $this->mergeConfigFrom(__DIR__.'/../config/paymob.php', 'paymob');
+        $this->app->singleton(TokenManager::class, fn ($app) => new TokenManager($app->make(Factory::class), $app->make(Repository::class)));
         $this->app->singleton(PaymobHttpClient::class);
         $this->app->singleton(Paymob::class);
         $this->app->alias(Paymob::class, 'paymob');
@@ -23,10 +23,12 @@ final class PaymobServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-        $this->loadRoutesFrom(__DIR__ . '/../routes/webhooks.php');
-        $this->publishes([__DIR__ . '/../config/paymob.php' => config_path('paymob.php')], 'paymob-config');
-        $this->publishes([__DIR__ . '/../database/migrations' => database_path('migrations')], 'paymob-migrations');
-        if ($this->app->runningInConsole()) $this->commands([SyncSubscriptionsCommand::class, PruneWebhookCallsCommand::class]);
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadRoutesFrom(__DIR__.'/../routes/webhooks.php');
+        $this->publishes([__DIR__.'/../config/paymob.php' => config_path('paymob.php')], 'paymob-config');
+        $this->publishes([__DIR__.'/../database/migrations' => database_path('migrations')], 'paymob-migrations');
+        if ($this->app->runningInConsole()) {
+            $this->commands([SyncSubscriptionsCommand::class, PruneWebhookCallsCommand::class]);
+        }
     }
 }

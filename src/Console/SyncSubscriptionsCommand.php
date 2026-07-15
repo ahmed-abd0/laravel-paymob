@@ -15,9 +15,11 @@ final class SyncSubscriptionsCommand extends Command
     {
         $this->components->info("Expired {$subscriptions->expireIncomplete()} stale incomplete subscriptions.");
 
-        if ($this->option('plans')) $this->components->info("Synced {$plans->syncAll()} Paymob plans.");
+        if ($this->option('plans')) {
+            $this->components->info("Synced {$plans->syncAll()} Paymob plans.");
+        }
 
-        $this->components->info("Synced {$subscriptions->syncAll((bool)$this->option('with-relations'))} Paymob subscriptions.");
+        $this->components->info("Synced {$subscriptions->syncAll((bool) $this->option('with-relations'))} Paymob subscriptions.");
 
         return self::SUCCESS;
     }

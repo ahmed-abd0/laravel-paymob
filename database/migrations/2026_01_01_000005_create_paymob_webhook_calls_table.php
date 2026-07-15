@@ -25,5 +25,8 @@ return new class extends Migration
         });
     }
 
-    public function down(): void { Schema::dropIfExists(config('paymob.tables.webhook_calls', 'paymob_webhook_calls')); }
+    public function down(): void
+    {
+        Schema::dropIfExists(config('paymob.tables.webhook_calls', 'paymob_webhook_calls'));
+    }
 };

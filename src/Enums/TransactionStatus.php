@@ -13,10 +13,19 @@ enum TransactionStatus: string
 
     public static function fromPayload(array $payload): self
     {
-        if ((bool) ($payload['is_refunded'] ?? false)) return self::REFUNDED;
-        if ((bool) ($payload['is_voided'] ?? false)) return self::VOIDED;
-        if ((bool) ($payload['is_capture'] ?? false) || (bool) ($payload['is_captured'] ?? false)) return self::CAPTURED;
-        if ((bool) ($payload['pending'] ?? false)) return self::PENDING;
+        if ((bool) ($payload['is_refunded'] ?? false)) {
+            return self::REFUNDED;
+        }
+        if ((bool) ($payload['is_voided'] ?? false)) {
+            return self::VOIDED;
+        }
+        if ((bool) ($payload['is_capture'] ?? false) || (bool) ($payload['is_captured'] ?? false)) {
+            return self::CAPTURED;
+        }
+        if ((bool) ($payload['pending'] ?? false)) {
+            return self::PENDING;
+        }
+
         return (bool) ($payload['success'] ?? false) ? self::SUCCEEDED : self::FAILED;
     }
 }

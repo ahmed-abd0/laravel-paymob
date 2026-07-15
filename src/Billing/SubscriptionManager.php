@@ -19,14 +19,18 @@ final class SubscriptionManager
     {
         $this->guardRemoteId($subscription);
         $response = $this->api->suspend($subscription->paymob_id)->toArray();
+
         return $this->persist($subscription, $response + ['state' => 'suspended']);
     }
 
     public function resume(Subscription $subscription, ?string $nextBilling = null): Subscription
     {
         $this->guardRemoteId($subscription);
-        if ($nextBilling) $this->api->update($subscription->paymob_id, ['next_billing' => $nextBilling]);
+        if ($nextBilling) {
+            $this->api->update($subscription->paymob_id, ['next_billing' => $nextBilling]);
+        }
         $response = $this->api->resume($subscription->paymob_id)->toArray();
+
         return $this->persist($subscription, $response + ['state' => 'active']);
     }
 
@@ -34,6 +38,7 @@ final class SubscriptionManager
     {
         $this->guardRemoteId($subscription);
         $response = $this->api->cancel($subscription->paymob_id)->toArray();
+
         return $this->persist($subscription, $response + ['state' => 'cancelled']);
     }
 
@@ -42,6 +47,7 @@ final class SubscriptionManager
         $this->guardRemoteId($subscription);
         $allowed = array_intersect_key($data, array_flip(['amount_cents', 'ends_at', 'next_billing']));
         $response = $this->api->update($subscription->paymob_id, $allowed)->toArray();
+
         return $this->persist($subscription, $response + $allowed);
     }
 
@@ -53,6 +59,7 @@ final class SubscriptionManager
             $this->syncTransactions($subscription);
             $this->syncPaymentMethods($subscription);
         }
+
         return $subscription;
     }
 
@@ -83,11 +90,12 @@ final class SubscriptionManager
                 'is_void' => $this->bool($row['is_void'] ?? false),
                 'is_capture' => $this->bool($row['is_capture'] ?? false),
                 'occurred_at' => $row['created_at'] ?? null,
-                'payload' => $row
+                'payload' => $row,
             ]);
             $transaction->billable()->associate($subscription->billable);
             $transaction->save();
         }
+
         return count($rows);
     }
 
@@ -96,7 +104,9 @@ final class SubscriptionManager
         $this->guardRemoteId($subscription);
         $data = $this->api->cards($subscription->paymob_id)->toArray();
         $rows = Arr::isList($data) ? $data : ($data['results'] ?? $data['data'] ?? []);
-        if (collect($rows)->contains(fn(array $row) => (bool) ($row['is_primary'] ?? false))) $subscription->paymentMethods()->update(['primary' => false]);
+        if (collect($rows)->contains(fn (array $row) => (bool) ($row['is_primary'] ?? false))) {
+            $subscription->paymentMethods()->update(['primary' => false]);
+        }
         foreach ($rows as $row) {
             $token = (string) ($row['token'] ?? '');
             $query = config('paymob.models.payment_method')::query();
@@ -109,14 +119,14 @@ final class SubscriptionManager
                 'masked_pan' => $row['masked_pan'] ?? $method->masked_pan,
                 'brand' => data_get($row, 'card_data.sub_type') ?? data_get($row, 'card_data.card_subtype') ?? $method->brand,
                 'primary' => (bool) ($row['is_primary'] ?? false),
-                'payload' => Arr::except($row, ['token'])
+                'payload' => Arr::except($row, ['token']),
             ]);
             $method->billable()->associate($subscription->billable);
             $method->save();
         }
+
         return count($rows);
     }
-
 
     public function expireIncomplete(): int
     {
@@ -139,6 +149,7 @@ final class SubscriptionManager
                 }
             }
         });
+
         return $count;
     }
 
@@ -160,20 +171,26 @@ final class SubscriptionManager
                 'canceled_at' => $state === SubscriptionStatus::CANCELED ? ($subscription->canceled_at ?? now()) : $subscription->canceled_at,
                 'activated_at' => $state === SubscriptionStatus::ACTIVE ? ($subscription->activated_at ?? now()) : $subscription->activated_at,
                 'synced_at' => now(),
-                'payload' => $data
+                'payload' => $data,
             ])->save();
+
             return $subscription;
         });
     }
 
     private function guardRemoteId(Subscription $subscription): void
     {
-        if (!$subscription->paymob_id) throw new PaymobException('The subscription is not active at Paymob yet.');
+        if (! $subscription->paymob_id) {
+            throw new PaymobException('The subscription is not active at Paymob yet.');
+        }
     }
 
     private function date(mixed $value): mixed
     {
-        if (!$value) return null;
+        if (! $value) {
+            return null;
+        }
+
         return $value instanceof \DateTimeInterface ? $value : Carbon::parse($value)->toDateString();
     }
 

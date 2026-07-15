@@ -15,6 +15,7 @@ class ApiException extends PaymobException
     {
         $body = $response->json() ?? $response->body();
         $message = data_get($body, 'message') ?? data_get($body, 'detail') ?? data_get($body, 'error') ?? "Paymob API returned HTTP {$response->status()}.";
+
         return new self($response->status(), $body, is_string($message) ? $message : json_encode($message));
     }
 }

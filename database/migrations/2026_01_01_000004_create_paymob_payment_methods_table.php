@@ -24,5 +24,8 @@ return new class extends Migration
         });
     }
 
-    public function down(): void { Schema::dropIfExists(config('paymob.tables.payment_methods', 'paymob_payment_methods')); }
+    public function down(): void
+    {
+        Schema::dropIfExists(config('paymob.tables.payment_methods', 'paymob_payment_methods'));
+    }
 };

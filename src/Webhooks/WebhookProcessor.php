@@ -23,7 +23,9 @@ final class WebhookProcessor
         DB::transaction(function () use ($call) {
             /** @var WebhookCall $locked */
             $locked = config('paymob.models.webhook_call')::query()->lockForUpdate()->findOrFail($call->getKey());
-            if ($locked->status === 'processed') return;
+            if ($locked->status === 'processed') {
+                return;
+            }
             $locked->increment('attempts');
             try {
                 $event = match (WebhookType::from($locked->type)) {
@@ -33,8 +35,8 @@ final class WebhookProcessor
                     default => null
                 };
                 $locked->update(['status' => 'processed', 'error' => null, 'processed_at' => now()]);
-                $this->afterCommit(fn() => $event && event($event));
-                $this->afterCommit(fn() => event(new WebhookHandled($locked->fresh())));
+                $this->afterCommit(fn () => $event && event($event));
+                $this->afterCommit(fn () => event(new WebhookHandled($locked->fresh())));
             } catch (\Throwable $e) {
                 $locked->update(['status' => 'failed', 'error' => $e->getMessage()]);
                 throw $e;
@@ -70,9 +72,11 @@ final class WebhookProcessor
             'is_void' => $this->bool($data['is_void'] ?? false),
             'is_capture' => $this->bool($data['is_capture'] ?? false),
             'occurred_at' => $this->dateTime($data['created_at'] ?? null),
-            'payload' => $this->withoutSecrets($data)
+            'payload' => $this->withoutSecrets($data),
         ]);
-        if ($subscription) $transaction->billable()->associate($subscription->billable);
+        if ($subscription) {
+            $transaction->billable()->associate($subscription->billable);
+        }
         $transaction->save();
 
         if ($subscription) {
@@ -85,10 +89,11 @@ final class WebhookProcessor
                     TransactionStatus::FAILED => $subscription->incomplete() ? SubscriptionStatus::INCOMPLETE : SubscriptionStatus::PAST_DUE,
                     default => $subscription->status
                 },
-                'activated_at' => in_array($status, [TransactionStatus::SUCCEEDED, TransactionStatus::CAPTURED], true) ? ($subscription->activated_at ?? now()) : $subscription->activated_at
-            ], fn($value) => $value !== null))->save();
-            $this->afterCommit(fn() => event(new SubscriptionUpdated($subscription->fresh())));
+                'activated_at' => in_array($status, [TransactionStatus::SUCCEEDED, TransactionStatus::CAPTURED], true) ? ($subscription->activated_at ?? now()) : $subscription->activated_at,
+            ], fn ($value) => $value !== null))->save();
+            $this->afterCommit(fn () => event(new SubscriptionUpdated($subscription->fresh())));
         }
+
         return new TransactionUpdated($transaction->fresh());
     }
 
@@ -108,11 +113,14 @@ final class WebhookProcessor
             'token' => $token,
             'masked_pan' => $data['masked_pan'] ?? null,
             'brand' => $data['card_subtype'] ?? null,
-            'primary' => $subscription ? !$subscription->paymentMethods()->where('primary', true)->exists() : false,
-            'payload' => $this->withoutSecrets($data)
+            'primary' => $subscription ? ! $subscription->paymentMethods()->where('primary', true)->exists() : false,
+            'payload' => $this->withoutSecrets($data),
         ]);
-        if ($subscription) $method->billable()->associate($subscription->billable);
+        if ($subscription) {
+            $method->billable()->associate($subscription->billable);
+        }
         $method->save();
+
         return new PaymentMethodUpdated($method->fresh());
     }
 
@@ -123,13 +131,15 @@ final class WebhookProcessor
         $reference = $data['merchant_order_id'] ?? $data['reference'] ?? data_get($data, 'metadata.subscription_reference');
         /** @var Subscription|null $subscription */
         $subscription = config('paymob.models.subscription')::query()
-            ->when($id, fn($query) => $query->where('paymob_id', $id))
-            ->when(!$id && $reference, fn($query) => $query->where('reference', $reference))
+            ->when($id, fn ($query) => $query->where('paymob_id', $id))
+            ->when(! $id && $reference, fn ($query) => $query->where('reference', $reference))
             ->first();
-        if (!$subscription && ($initialTransaction = $this->scalar($data['initial_transaction'] ?? null))) {
+        if (! $subscription && ($initialTransaction = $this->scalar($data['initial_transaction'] ?? null))) {
             $subscription = config('paymob.models.transaction')::query()->where('paymob_id', $initialTransaction)->first()?->subscription;
         }
-        if (!$subscription) throw new \RuntimeException('Unable to match the Paymob subscription webhook to a local subscription.');
+        if (! $subscription) {
+            throw new \RuntimeException('Unable to match the Paymob subscription webhook to a local subscription.');
+        }
         $state = SubscriptionStatus::fromPaymob($data['state'] ?? $data['status'] ?? null);
         $subscription->fill([
             'paymob_id' => $id ?: $subscription->paymob_id,
@@ -144,8 +154,9 @@ final class WebhookProcessor
             'canceled_at' => $state === SubscriptionStatus::CANCELED ? ($subscription->canceled_at ?? now()) : $subscription->canceled_at,
             'activated_at' => $state === SubscriptionStatus::ACTIVE ? ($subscription->activated_at ?? now()) : $subscription->activated_at,
             'synced_at' => now(),
-            'payload' => $this->withoutSecrets($data)
+            'payload' => $this->withoutSecrets($data),
         ])->save();
+
         return new SubscriptionUpdated($subscription->fresh());
     }
 
@@ -157,11 +168,16 @@ final class WebhookProcessor
             ?? data_get($data, 'extras.subscription_reference');
         if ($reference) {
             $subscription = config('paymob.models.subscription')::query()->where('reference', $reference)->first();
-            if ($subscription) return $subscription;
+            if ($subscription) {
+                return $subscription;
+            }
         }
         $intentionId = $data['intention_id'] ?? data_get($data, 'payment_key_claims.intention_id');
-        if ($intentionId) return config('paymob.models.subscription')::query()->where('intention_id', $intentionId)->first();
+        if ($intentionId) {
+            return config('paymob.models.subscription')::query()->where('intention_id', $intentionId)->first();
+        }
         $remoteId = $data['subscription_id'] ?? data_get($data, 'subscription.id');
+
         return $remoteId ? config('paymob.models.subscription')::query()->where('paymob_id', $remoteId)->first() : null;
     }
 
@@ -194,7 +210,10 @@ final class WebhookProcessor
     private function withoutSecrets(array $data): array
     {
         unset($data['token'], $data['client_secret'], $data['payment_token']);
-        if (isset($data['payment_key_claims']['billing_data'])) $data['payment_key_claims']['billing_data'] = '[redacted]';
+        if (isset($data['payment_key_claims']['billing_data'])) {
+            $data['payment_key_claims']['billing_data'] = '[redacted]';
+        }
+
         return $data;
     }
 
@@ -207,7 +226,10 @@ final class WebhookProcessor
                 report($e);
             }
         };
-        if (config('paymob.webhooks.dispatch_after_commit', true)) DB::afterCommit($safe);
-        else $safe();
+        if (config('paymob.webhooks.dispatch_after_commit', true)) {
+            DB::afterCommit($safe);
+        } else {
+            $safe();
+        }
     }
 }

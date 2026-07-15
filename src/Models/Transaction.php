@@ -25,7 +25,7 @@ class Transaction extends Model
             'is_void' => 'boolean',
             'is_capture' => 'boolean',
             'occurred_at' => 'datetime',
-            'payload' => 'array'
+            'payload' => 'array',
         ];
     }
 

@@ -41,38 +41,45 @@ final class SubscriptionBuilder
         $clone->billable = $billable;
         $clone->name = $name;
         $clone->plan = $plan;
+
         return $clone;
     }
 
     public function billing(BillingData|array $data): self
     {
         $this->billingData = $data instanceof BillingData ? $data : BillingData::fromArray($data);
+
         return $this;
     }
     public function amount(int $amountCents): self
     {
         $this->amountCents = $amountCents;
+
         return $this;
     }
     public function currency(string $currency): self
     {
         $this->currency = strtoupper($currency);
+
         return $this;
     }
     public function paymentMethods(array $integrationIds): self
     {
         $this->paymentMethods = array_map('intval', $integrationIds);
+
         return $this;
     }
     public function metadata(array $metadata): self
     {
         $this->metadata = $metadata;
+
         return $this;
     }
     public function trialUntil(DateTimeInterface $date): self
     {
         $this->trialEndsAt = $date;
         $this->startDate = $date->format('Y-m-d');
+
         return $this;
     }
     public function trialDays(int $days): self
@@ -82,29 +89,34 @@ final class SubscriptionBuilder
     public function startAt(DateTimeInterface|string $date): self
     {
         $this->startDate = $date instanceof DateTimeInterface ? $date->format('Y-m-d') : $date;
+
         return $this;
     }
     public function callbackUrls(?string $notificationUrl, ?string $redirectionUrl): self
     {
         $this->notificationUrl = $notificationUrl;
         $this->redirectionUrl = $redirectionUrl;
+
         return $this;
     }
     public function expiresIn(int $seconds): self
     {
         $this->expiration = $seconds;
+
         return $this;
     }
     public function description(string $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 
     public function checkout(): Checkout
     {
-        $key = 'paymob:subscription:create:' . hash('sha256', $this->billable->getMorphClass() . '|' . $this->billable->getKey() . '|' . $this->name);
-        return Cache::lock($key, 60)->block(10, fn() => $this->createCheckout());
+        $key = 'paymob:subscription:create:'.hash('sha256', $this->billable->getMorphClass().'|'.$this->billable->getKey().'|'.$this->name);
+
+        return Cache::lock($key, 60)->block(10, fn () => $this->createCheckout());
     }
 
     private function createCheckout(): Checkout
@@ -113,16 +125,20 @@ final class SubscriptionBuilder
         if ($existing?->status === SubscriptionStatus::INCOMPLETE && $existing->created_at?->lte(now()->subSeconds(config('paymob.checkout.expiration', 3600)))) {
             $existing->update(['status' => SubscriptionStatus::INCOMPLETE_EXPIRED]);
         }
-        if ($existing && !in_array($existing->status, [SubscriptionStatus::CANCELED, SubscriptionStatus::EXPIRED, SubscriptionStatus::INCOMPLETE_EXPIRED], true)) {
+        if ($existing && ! in_array($existing->status, [SubscriptionStatus::CANCELED, SubscriptionStatus::EXPIRED, SubscriptionStatus::INCOMPLETE_EXPIRED], true)) {
             throw new InvalidArgumentException("A non-terminal subscription named [{$this->name}] already exists.");
         }
         $plan = $this->plan instanceof Plan ? $this->plan : null;
         $remotePlanId = (string) ($plan?->paymob_id ?? $this->plan);
         $amount = $this->amountCents ?? $plan?->amount_cents;
-        if (!$amount) throw new InvalidArgumentException('A positive initial transaction amount is required.');
+        if (! $amount) {
+            throw new InvalidArgumentException('A positive initial transaction amount is required.');
+        }
         $billing = $this->billingData ?? BillingData::fromArray(method_exists($this->billable, 'paymobBillingData') ? $this->billable->paymobBillingData() : []);
         $payments = $this->paymentMethods ?: array_values(array_filter([(int) config('paymob.integrations.card_3ds'), (int) config('paymob.integrations.default')]));
-        if (!$payments) throw new InvalidArgumentException('Configure PAYMOB_CARD_3DS_INTEGRATION_ID or pass paymentMethods().');
+        if (! $payments) {
+            throw new InvalidArgumentException('Configure PAYMOB_CARD_3DS_INTEGRATION_ID or pass paymentMethods().');
+        }
         $subscriptionClass = config('paymob.models.subscription');
         /** @var Subscription $subscription */
         $subscription = new $subscriptionClass;
@@ -137,7 +153,7 @@ final class SubscriptionBuilder
             'currency' => $this->currency ?? $plan?->currency ?? config('paymob.currency', 'EGP'),
             'starts_at' => $this->startDate,
             'trial_ends_at' => $this->trialEndsAt,
-            'metadata' => $this->metadata
+            'metadata' => $this->metadata,
         ]);
         $subscription->billable()->associate($this->billable);
         $subscription->save();
@@ -145,7 +161,7 @@ final class SubscriptionBuilder
         $extras = array_merge($this->metadata, [
             'subscription_reference' => $reference,
             'billable_type' => $this->billable->getMorphClass(),
-            'billable_id' => (string) $this->billable->getKey()
+            'billable_id' => (string) $this->billable->getKey(),
         ]);
         $data = new IntentionData(
             amount: $amount,
@@ -168,7 +184,7 @@ final class SubscriptionBuilder
                 'intention_id' => $payload['id'] ?? null,
                 'intention_order_id' => $payload['intention_order_id'] ?? data_get($payload, 'payment_keys.0.order_id'),
                 'client_secret' => $payload['client_secret'] ?? null,
-                'payload' => $payload
+                'payload' => $payload,
             ]);
         } catch (\Throwable $e) {
             $subscription->update(['metadata' => array_merge($subscription->metadata ?? [], ['creation_error' => $e->getMessage()])]);
@@ -176,6 +192,7 @@ final class SubscriptionBuilder
         }
 
         $clientSecret = (string) $subscription->client_secret;
+
         return new Checkout($this->intentions->checkoutUrl($clientSecret), $clientSecret, $response, $subscription->refresh());
     }
 

@@ -16,17 +16,23 @@ final class PaymobHttpClient
     public function secret(string $method, string $path, array $data = [], array $options = []): PaymobResponse
     {
         $secret = config('paymob.keys.secret');
-        if (!$secret) throw new ConfigurationException('PAYMOB_SECRET_KEY is not configured.');
-        return $this->send($method, $path, $data, $options, fn(PendingRequest $request) => $request->withToken($secret, 'Token'));
+        if (! $secret) {
+            throw new ConfigurationException('PAYMOB_SECRET_KEY is not configured.');
+        }
+
+        return $this->send($method, $path, $data, $options, fn (PendingRequest $request) => $request->withToken($secret, 'Token'));
     }
 
     public function bearer(string $method, string $path, array $data = [], array $options = []): PaymobResponse
     {
         try {
-            return $this->send($method, $path, $data, $options, fn(PendingRequest $request) => $request->withToken($this->tokens->token()));
+            return $this->send($method, $path, $data, $options, fn (PendingRequest $request) => $request->withToken($this->tokens->token()));
         } catch (ApiException $e) {
-            if ($e->status !== 401) throw $e;
-            return $this->send($method, $path, $data, $options, fn(PendingRequest $request) => $request->withToken($this->tokens->token(true)));
+            if ($e->status !== 401) {
+                throw $e;
+            }
+
+            return $this->send($method, $path, $data, $options, fn (PendingRequest $request) => $request->withToken($this->tokens->token(true)));
         }
     }
 
@@ -43,23 +49,43 @@ final class PaymobHttpClient
         if (in_array($method, config('paymob.http.retry_methods', ['GET']), true)) {
             $request = $request->retry(config('paymob.http.retries', 2), config('paymob.http.retry_sleep_ms', 300), throw: false);
         }
-        if (!isset($options['multipart'])) $request = $request->asJson();
-        if ($authenticate) $request = $authenticate($request);
-        if (!str_starts_with($path, 'http')) $request = $request->baseUrl($this->baseUrl());
-        if ($headers = ($options['headers'] ?? null)) $request = $request->withHeaders($headers);
-        if (($options['form'] ?? false) === true) $request = $request->asForm();
+        if (! isset($options['multipart'])) {
+            $request = $request->asJson();
+        }
+        if ($authenticate) {
+            $request = $authenticate($request);
+        }
+        if (! str_starts_with($path, 'http')) {
+            $request = $request->baseUrl($this->baseUrl());
+        }
+        if ($headers = ($options['headers'] ?? null)) {
+            $request = $request->withHeaders($headers);
+        }
+        if (($options['form'] ?? false) === true) {
+            $request = $request->asForm();
+        }
         $sendOptions = [];
-        if ($multipart = ($options['multipart'] ?? null)) $sendOptions['multipart'] = $multipart;
-        elseif (strtoupper($method) === 'GET') $sendOptions['query'] = $data;
-        else $sendOptions['json'] = $data;
+        if ($multipart = ($options['multipart'] ?? null)) {
+            $sendOptions['multipart'] = $multipart;
+        } elseif (strtoupper($method) === 'GET') {
+            $sendOptions['query'] = $data;
+        } else {
+            $sendOptions['json'] = $data;
+        }
         $response = $request->send($method, $path, $sendOptions);
-        if ($response->failed()) throw ApiException::fromResponse($response);
+        if ($response->failed()) {
+            throw ApiException::fromResponse($response);
+        }
+
         return new PaymobResponse($response->status(), $response->json() ?? [], $response->headers());
     }
 
     public function baseUrl(): string
     {
-        if ($url = config('paymob.base_url')) return rtrim($url, '/');
+        if ($url = config('paymob.base_url')) {
+            return rtrim($url, '/');
+        }
+
         return Region::from(config('paymob.region', Region::EGYPT->value))->baseUrl();
     }
 }

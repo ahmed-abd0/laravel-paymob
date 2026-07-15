@@ -12,11 +12,14 @@ final class Transactions
 
     public function byOrder(int|string|null $orderId = null, ?string $merchantOrderId = null): PaymobResponse
     {
-        if ($orderId === null && $merchantOrderId === null) throw new InvalidArgumentException('An order ID or merchant order ID is required.');
+        if ($orderId === null && $merchantOrderId === null) {
+            throw new InvalidArgumentException('An order ID or merchant order ID is required.');
+        }
+
         return $this->http->bearer('POST', '/api/ecommerce/orders/transaction_inquiry', array_filter([
             'order_id' => $orderId,
-            'merchant_order_id' => $merchantOrderId
-        ], fn($value) => $value !== null));
+            'merchant_order_id' => $merchantOrderId,
+        ], fn ($value) => $value !== null));
     }
 
     public function find(int|string $transactionId): PaymobResponse

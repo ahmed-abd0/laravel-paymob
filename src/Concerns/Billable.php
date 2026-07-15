@@ -43,12 +43,13 @@ trait Billable
     {
         $name = trim((string) ($this->name ?? 'Customer'));
         $parts = preg_split('/\s+/', $name, 2);
+
         return [
             'first_name' => $this->first_name ?? $parts[0] ?? 'Customer',
             'last_name' => $this->last_name ?? $parts[1] ?? 'Customer',
             'email' => (string) ($this->email ?? ''),
             'phone_number' => (string) ($this->phone ?? $this->phone_number ?? ''),
-            'country' => 'EG'
+            'country' => 'EG',
         ];
     }
 }

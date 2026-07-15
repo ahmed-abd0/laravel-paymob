@@ -42,8 +42,13 @@ final readonly class BillingData implements Arrayable
 
     public function toArray(): array
     {
-        if ($this->firstName === '' || $this->lastName === '' || $this->phoneNumber === '') throw new InvalidArgumentException('First name, last name, and phone number are required.');
-        if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) throw new InvalidArgumentException('A valid billing email is required.');
+        if ($this->firstName === '' || $this->lastName === '' || $this->phoneNumber === '') {
+            throw new InvalidArgumentException('First name, last name, and phone number are required.');
+        }
+        if (! filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException('A valid billing email is required.');
+        }
+
         return [
             'first_name' => $this->firstName,
             'last_name' => $this->lastName,
@@ -56,7 +61,7 @@ final readonly class BillingData implements Arrayable
             'city' => $this->city,
             'country' => $this->country,
             'state' => $this->state,
-            'postal_code' => $this->postalCode
+            'postal_code' => $this->postalCode,
         ];
     }
 }

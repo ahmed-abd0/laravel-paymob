@@ -15,7 +15,7 @@ final readonly class Item implements Arrayable
             'amount' => $this->amount,
             'quantity' => $this->quantity,
             'description' => $this->description,
-            'image' => $this->image
-        ], fn($value) => $value !== null);
+            'image' => $this->image,
+        ], fn ($value) => $value !== null);
     }
 }

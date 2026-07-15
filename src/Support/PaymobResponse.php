@@ -6,7 +6,7 @@ use ArrayAccess;
 use Illuminate\Contracts\Support\Arrayable;
 use JsonSerializable;
 
-final class PaymobResponse implements ArrayAccess, Arrayable, JsonSerializable
+final class PaymobResponse implements Arrayable, ArrayAccess, JsonSerializable
 {
     public function __construct(public readonly int $status, private readonly array $data, public readonly array $headers = []) {}
 

@@ -3,9 +3,9 @@
 namespace Paymob\Laravel\Data;
 
 use Illuminate\Contracts\Support\Arrayable;
+use InvalidArgumentException;
 use Paymob\Laravel\Enums\PlanFrequency;
 use Paymob\Laravel\Enums\PlanType;
-use InvalidArgumentException;
 
 final readonly class SubscriptionPlanData implements Arrayable
 {
@@ -26,8 +26,13 @@ final readonly class SubscriptionPlanData implements Arrayable
     public function toArray(): array
     {
         $frequency = $this->frequency instanceof PlanFrequency ? $this->frequency->value : $this->frequency;
-        if (!in_array($frequency, array_column(PlanFrequency::cases(), 'value'), true)) throw new InvalidArgumentException('Unsupported Paymob subscription frequency.');
-        if ($this->amountCents <= 0 || $this->integration <= 0) throw new InvalidArgumentException('Plan amount and MOTO integration ID must be positive.');
+        if (! in_array($frequency, array_column(PlanFrequency::cases(), 'value'), true)) {
+            throw new InvalidArgumentException('Unsupported Paymob subscription frequency.');
+        }
+        if ($this->amountCents <= 0 || $this->integration <= 0) {
+            throw new InvalidArgumentException('Plan amount and MOTO integration ID must be positive.');
+        }
+
         return array_filter([
             'frequency' => $frequency,
             'name' => $this->name,
@@ -39,7 +44,7 @@ final readonly class SubscriptionPlanData implements Arrayable
             'use_transaction_amount' => $this->useTransactionAmount,
             'is_active' => $this->active,
             'integration' => $this->integration,
-            'webhook_url' => $this->webhookUrl
-        ], fn($value) => $value !== null);
+            'webhook_url' => $this->webhookUrl,
+        ], fn ($value) => $value !== null);
     }
 }

@@ -41,7 +41,7 @@ final class WebhookController extends Controller
             WebhookType::SUBSCRIPTION => $this->signatures->subscription($request->query('secret') ?? $request->header('X-Paymob-Webhook-Secret')),
             default => false
         };
-        $hash = hash('sha256', $type->value . '|' . $this->canonical($payload) . '|' . (string) $signature);
+        $hash = hash('sha256', $type->value.'|'.$this->canonical($payload).'|'.(string) $signature);
         /** @var WebhookCall $call */
         $call = config('paymob.models.webhook_call')::query()->firstOrCreate(['payload_hash' => $hash], [
             'type' => $type->value,
@@ -50,19 +50,29 @@ final class WebhookController extends Controller
             'signature' => $signature,
             'valid_signature' => $valid,
             'payload' => $payload,
-            'status' => $valid ? 'pending' : 'rejected'
+            'status' => $valid ? 'pending' : 'rejected',
         ]);
-        if (!$valid) throw new InvalidSignatureException('Invalid Paymob webhook signature.');
-        if ($call->status !== 'processed') $this->processor->process($call);
+        if (! $valid) {
+            throw new InvalidSignatureException('Invalid Paymob webhook signature.');
+        }
+        if ($call->status !== 'processed') {
+            $this->processor->process($call);
+        }
+
         return response()->noContent();
     }
 
     private function payload(Request $request): array
     {
         $payload = $request->json()->all();
-        if (!$payload) $payload = $request->request->all();
-        if (!$payload) $payload = $request->query();
+        if (! $payload) {
+            $payload = $request->request->all();
+        }
+        if (! $payload) {
+            $payload = $request->query();
+        }
         unset($payload['hmac'], $payload['secret']);
+
         return $payload;
     }
 
@@ -70,17 +80,25 @@ final class WebhookController extends Controller
     {
         $object = isset($payload['obj']) && is_array($payload['obj']) ? $payload['obj'] : $payload;
         $id = $object['id'] ?? $object['subscription_id'] ?? null;
+
         return is_scalar($id) ? (string) $id : null;
     }
 
     private function canonical(array $payload): string
     {
         $sort = function (&$value) use (&$sort) {
-            if (!is_array($value)) return;
-            foreach ($value as &$item) $sort($item);
-            if (!array_is_list($value)) ksort($value);
+            if (! is_array($value)) {
+                return;
+            }
+            foreach ($value as &$item) {
+                $sort($item);
+            }
+            if (! array_is_list($value)) {
+                ksort($value);
+            }
         };
         $sort($payload);
+
         return json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 }

@@ -37,5 +37,8 @@ return new class extends Migration
         });
     }
 
-    public function down(): void { Schema::dropIfExists(config('paymob.tables.transactions', 'paymob_transactions')); }
+    public function down(): void
+    {
+        Schema::dropIfExists(config('paymob.tables.transactions', 'paymob_transactions'));
+    }
 };

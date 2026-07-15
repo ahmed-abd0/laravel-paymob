@@ -17,7 +17,7 @@ final class QuickLinks
     public function cancel(int|string $linkId): PaymobResponse
     {
         return $this->http->bearer('POST', '/api/ecommerce/payment-links/cancel', options: [
-            'multipart' => $this->multipart(['payment_link_id' => $linkId])
+            'multipart' => $this->multipart(['payment_link_id' => $linkId]),
         ]);
     }
 
@@ -39,6 +39,7 @@ final class QuickLinks
                 $parts[] = $part;
             }
         }
+
         return $parts;
     }
 }

@@ -28,7 +28,7 @@ class Subscription extends Model
             'activated_at' => 'datetime',
             'synced_at' => 'datetime',
             'metadata' => 'array',
-            'payload' => 'array'
+            'payload' => 'array',
         ];
     }
 
@@ -55,7 +55,7 @@ class Subscription extends Model
 
     public function active(): bool
     {
-        return $this->status === SubscriptionStatus::ACTIVE && (!$this->ends_at || $this->ends_at->copy()->endOfDay()->isFuture());
+        return $this->status === SubscriptionStatus::ACTIVE && (! $this->ends_at || $this->ends_at->copy()->endOfDay()->isFuture());
     }
     public function incomplete(): bool
     {
@@ -89,21 +89,25 @@ class Subscription extends Model
     public function suspend(): static
     {
         app(SubscriptionManager::class)->suspend($this);
+
         return $this->refresh();
     }
     public function resume(?string $nextBilling = null): static
     {
         app(SubscriptionManager::class)->resume($this, $nextBilling);
+
         return $this->refresh();
     }
     public function cancel(): static
     {
         app(SubscriptionManager::class)->cancel($this);
+
         return $this->refresh();
     }
     public function sync(bool $withRelations = false): static
     {
         app(SubscriptionManager::class)->sync($this, $withRelations);
+
         return $this->refresh();
     }
     public function syncTransactions(): int
@@ -117,6 +121,7 @@ class Subscription extends Model
     public function updateBilling(array $data): static
     {
         app(SubscriptionManager::class)->update($this, $data);
+
         return $this->refresh();
     }
 }

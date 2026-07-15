@@ -30,18 +30,36 @@ final class IntentionData implements Arrayable
 
     public function items(Item|array ...$items): self
     {
-        $this->items = array_map(fn(Item|array $item) => $item instanceof Item ? $item->toArray() : $item, $items);
+        $this->items = array_map(fn (Item|array $item) => $item instanceof Item ? $item->toArray() : $item, $items);
+
         return $this;
     }
 
-    public function extras(array $extras): self { $this->extras = $extras; return $this; }
-    public function cardTokens(array $tokens): self { $this->cardTokens = array_values($tokens); return $this; }
+    public function extras(array $extras): self
+    {
+        $this->extras = $extras;
+
+        return $this;
+    }
+    public function cardTokens(array $tokens): self
+    {
+        $this->cardTokens = array_values($tokens);
+
+        return $this;
+    }
 
     public function toArray(): array
     {
-        if ($this->amount <= 0) throw new InvalidArgumentException('The intention amount must be greater than zero.');
-        if (!$this->paymentMethods || collect($this->paymentMethods)->contains(fn($id) => !is_numeric($id) || (int) $id <= 0)) throw new InvalidArgumentException('Valid Paymob integration IDs are required.');
-        if ($this->items && array_sum(array_column($this->items, 'amount')) !== $this->amount) throw new InvalidArgumentException('The intention amount must equal the sum of item amounts.');
+        if ($this->amount <= 0) {
+            throw new InvalidArgumentException('The intention amount must be greater than zero.');
+        }
+        if (! $this->paymentMethods || collect($this->paymentMethods)->contains(fn ($id) => ! is_numeric($id) || (int) $id <= 0)) {
+            throw new InvalidArgumentException('Valid Paymob integration IDs are required.');
+        }
+        if ($this->items && array_sum(array_column($this->items, 'amount')) !== $this->amount) {
+            throw new InvalidArgumentException('The intention amount must equal the sum of item amounts.');
+        }
+
         return array_filter([
             'amount' => $this->amount,
             'currency' => $this->currency,
@@ -56,7 +74,7 @@ final class IntentionData implements Arrayable
             'expiration' => $this->expiration,
             'subscription_plan_id' => $this->subscriptionPlanId,
             'subscriptionv2_id' => $this->subscriptionId,
-            'subscription_start_date' => $this->subscriptionStartDate
-        ], fn($value) => $value !== null);
+            'subscription_start_date' => $this->subscriptionStartDate,
+        ], fn ($value) => $value !== null);
     }
 }
