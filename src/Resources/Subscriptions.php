@@ -8,58 +8,112 @@ use Paymob\Laravel\Support\PaymobResponse;
 
 final class Subscriptions
 {
-    public function __construct(private readonly PaymobHttpClient $http, private readonly Intentions $intentions) {}
+    public function __construct(
+        private readonly PaymobHttpClient $http,
+        private readonly Intentions $intentions
+    ) {}
 
     public function create(IntentionData|array $data): PaymobResponse
     {
         return $this->intentions->create($data);
     }
+
     public function find(int|string $subscriptionId, array $query = []): PaymobResponse
     {
-        return $this->http->bearer('GET', "/api/acceptance/subscriptions/{$subscriptionId}", $query);
+        return $this->http->bearer(
+            'GET',
+            "/api/acceptance/subscriptions/{$subscriptionId}",
+            $query
+        );
     }
+
     public function update(int|string $subscriptionId, array $data): PaymobResponse
     {
-        return $this->http->bearer('PUT', "/api/acceptance/subscriptions/{$subscriptionId}", $data);
+        return $this->http->bearer(
+            'PUT',
+            "/api/acceptance/subscriptions/{$subscriptionId}",
+            $data
+        );
     }
+
     public function suspend(int|string $subscriptionId): PaymobResponse
     {
-        return $this->http->bearer('POST', "/api/acceptance/subscriptions/{$subscriptionId}/suspend");
+        return $this->http->bearer(
+            'POST',
+            "/api/acceptance/subscriptions/{$subscriptionId}/suspend"
+        );
     }
+
     public function resume(int|string $subscriptionId): PaymobResponse
     {
-        return $this->http->bearer('POST', "/api/acceptance/subscriptions/{$subscriptionId}/resume");
+        return $this->http->bearer(
+            'POST',
+            "/api/acceptance/subscriptions/{$subscriptionId}/resume"
+        );
     }
+
     public function cancel(int|string $subscriptionId): PaymobResponse
     {
-        return $this->http->bearer('POST', "/api/acceptance/subscriptions/{$subscriptionId}/cancel");
+        return $this->http->bearer(
+            'POST',
+            "/api/acceptance/subscriptions/{$subscriptionId}/cancel"
+        );
     }
+
     public function lastTransaction(int|string $subscriptionId): PaymobResponse
     {
-        return $this->http->bearer('GET', "/api/acceptance/subscriptions/{$subscriptionId}/last-transaction");
+        return $this->http->bearer(
+            'GET',
+            "/api/acceptance/subscriptions/{$subscriptionId}/last-transaction"
+        );
     }
+
     public function transactions(int|string $subscriptionId, array $query = []): PaymobResponse
     {
-        return $this->http->bearer('GET', "/api/acceptance/subscriptions/{$subscriptionId}/transactions", $query);
+        return $this->http->bearer(
+            'GET',
+            "/api/acceptance/subscriptions/{$subscriptionId}/transactions",
+            $query
+        );
     }
+
     public function cards(int|string $subscriptionId): PaymobResponse
     {
-        return $this->http->bearer('GET', "/api/acceptance/subscriptions/{$subscriptionId}/card-tokens");
+        return $this->http->bearer(
+            'GET',
+            "/api/acceptance/subscriptions/{$subscriptionId}/card-tokens"
+        );
     }
+
     public function addCard(IntentionData|array $data): PaymobResponse
     {
         return $this->intentions->create($data);
     }
+
     public function deleteCard(int|string $subscriptionId, int|string $cardId): PaymobResponse
     {
-        return $this->http->bearer('POST', "/api/acceptance/subscriptions/{$subscriptionId}/delete-card", ['card' => $cardId]);
+        return $this->http->bearer(
+            'POST',
+            "/api/acceptance/subscriptions/{$subscriptionId}/delete-card",
+            ['card' => $cardId]
+        );
     }
+
     public function changePrimaryCard(int|string $subscriptionId, int|string $cardId): PaymobResponse
     {
-        return $this->http->bearer('POST', "/api/acceptance/subscriptions/{$subscriptionId}/change-primary-card", ['card' => $cardId]);
+        return $this->http->bearer(
+            'POST',
+            "/api/acceptance/subscriptions/{$subscriptionId}/change-primary-card",
+            ['card' => $cardId]
+        );
     }
-    public function registerWebhook(int|string $planId, string $url): PaymobResponse
+
+    public function registerWebhook(int|string $subscriptionId, string $url): PaymobResponse
     {
-        return $this->http->bearer('POST', "/api/acceptance/subscriptions/{$planId}/register_webhook", ['url' => $url]);
+        return $this->http->bearer(
+            'POST',
+            "/api/acceptance/subscriptions/{$subscriptionId}/register_webhook",
+            ['url' => $url]
+        );
     }
 }

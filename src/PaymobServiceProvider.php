@@ -6,6 +6,7 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Support\ServiceProvider;
 use Paymob\Laravel\Console\PruneWebhookCallsCommand;
+use Paymob\Laravel\Console\RegisterWebhookCommand;
 use Paymob\Laravel\Console\SyncSubscriptionsCommand;
 use Paymob\Laravel\Http\PaymobHttpClient;
 use Paymob\Laravel\Http\TokenManager;
@@ -27,8 +28,13 @@ final class PaymobServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__.'/../routes/webhooks.php');
         $this->publishes([__DIR__.'/../config/paymob.php' => config_path('paymob.php')], 'paymob-config');
         $this->publishes([__DIR__.'/../database/migrations' => database_path('migrations')], 'paymob-migrations');
+
         if ($this->app->runningInConsole()) {
-            $this->commands([SyncSubscriptionsCommand::class, PruneWebhookCallsCommand::class]);
+            $this->commands([
+                SyncSubscriptionsCommand::class,
+                PruneWebhookCallsCommand::class,
+                RegisterWebhookCommand::class,
+            ]);
         }
     }
 }

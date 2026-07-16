@@ -44,7 +44,11 @@ return [
         'middleware' => ['api'],
         'verify_transaction_hmac' => env('PAYMOB_VERIFY_HMAC', true),
         'subscription_secret' => env('PAYMOB_SUBSCRIPTION_WEBHOOK_SECRET'),
-        'require_subscription_secret' => env('PAYMOB_REQUIRE_SUBSCRIPTION_WEBHOOK_SECRET', true),
+        'subscription_url' => env('PAYMOB_SUBSCRIPTION_WEBHOOK_URL'),
+        'require_subscription_secret' => env(
+            'PAYMOB_REQUIRE_SUBSCRIPTION_WEBHOOK_SECRET',
+            true
+        ),
         'dispatch_after_commit' => true,
         'retain_days' => (int) env('PAYMOB_WEBHOOK_RETAIN_DAYS', 90),
     ],

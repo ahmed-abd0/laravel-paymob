@@ -98,6 +98,14 @@ class Subscription extends Model
 
         return $this->refresh();
     }
+
+    public function registerWebhook(?string $url = null): static
+    {
+        app(SubscriptionManager::class)->registerWebhook($this, $url);
+
+        return $this->refresh();
+    }
+
     public function cancel(): static
     {
         app(SubscriptionManager::class)->cancel($this);

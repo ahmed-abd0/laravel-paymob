@@ -10,10 +10,14 @@ use Paymob\Laravel\Enums\TransactionStatus;
 use Paymob\Laravel\Exceptions\PaymobException;
 use Paymob\Laravel\Models\Subscription;
 use Paymob\Laravel\Resources\Subscriptions;
+use Paymob\Laravel\Support\SubscriptionWebhookUrl;
 
 final class SubscriptionManager
 {
-    public function __construct(private readonly Subscriptions $api) {}
+    public function __construct(
+        private readonly Subscriptions $api,
+        private readonly SubscriptionWebhookUrl $webhookUrls
+    ) {}
 
     public function suspend(Subscription $subscription): Subscription
     {
@@ -61,6 +65,21 @@ final class SubscriptionManager
         }
 
         return $subscription;
+    }
+
+    public function registerWebhook(Subscription $subscription, ?string $url = null): Subscription
+    {
+        $this->guardRemoteId($subscription);
+
+        $url = $this->webhookUrls->resolve($url);
+        $response = $this->api
+            ->registerWebhook($subscription->paymob_id, $url)
+            ->toArray();
+
+        return $this->persist(
+            $subscription,
+            $response + ['webhook_url' => $url]
+        );
     }
 
     public function syncTransactions(Subscription $subscription): int
