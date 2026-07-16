@@ -1,19 +1,37 @@
 {
-    "name": "paymob-community/laravel-paymob",
-    "description": "A Cashier-inspired Laravel package for Paymob payments, saved cards, and subscriptions.",
+    "name": "ahmed-abd0/laravel-paymob",
+    "description": "A Cashier-inspired Laravel package for Paymob payments, saved cards, subscriptions, refunds, webhooks, transaction inquiry, and Quick Links.",
     "keywords": [
         "laravel",
         "paymob",
         "payments",
+        "payment-gateway",
         "subscriptions",
+        "recurring-payments",
         "cashier",
+        "saved-cards",
+        "webhooks",
+        "refunds",
         "egypt",
         "ksa",
+        "saudi-arabia",
         "uae",
         "oman"
     ],
+    "homepage": "https://github.com/ahmed-abd0/laravel-paymob",
     "license": "MIT",
     "type": "library",
+    "authors": [
+        {
+            "name": "Ahmed Abdo",
+            "homepage": "https://github.com/ahmed-abd0",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/ahmed-abd0/laravel-paymob/issues",
+        "source": "https://github.com/ahmed-abd0/laravel-paymob"
+    },
     "require": {
         "php": "^8.2",
         "illuminate/cache": "^11.0|^12.0|^13.0",
@@ -53,15 +71,22 @@
         }
     },
     "scripts": {
-        "test": "pest",
-        "lint": "pint --test",
-        "format": "pint"
+        "test": "@php vendor/bin/pest",
+        "test:unit": "@php vendor/bin/pest --testsuite=Package",
+        "test:coverage": "@php vendor/bin/pest --coverage",
+        "lint": "@php vendor/bin/pint --test",
+        "format": "@php vendor/bin/pint",
+        "check": [
+            "@lint",
+            "@test"
+        ]
     },
-    "minimum-stability": "stable",
-    "prefer-stable": true,
     "config": {
+        "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true
         }
-    }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
