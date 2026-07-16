@@ -16,7 +16,7 @@ Redirect responses are never treated as proof of payment. Signed backend callbac
 ## Installation
 
 ```bash
-composer require paymob-community/laravel-paymob
+composer require ahmed-abd0/laravel-paymob
 php artisan vendor:publish --tag=paymob-config
 php artisan migrate
 ```
@@ -289,17 +289,17 @@ Schedule::command('paymob:prune-webhooks')->daily();
 
 ## Raw endpoint coverage
 
-| Area | Methods |
-|---|---|
-| Intentions | create, update, retrieve, checkout URL |
-| Subscription plans | create, list, update, suspend, resume |
-| Subscriptions | create, retrieve, update, suspend, resume, cancel |
-| Subscription details | last transaction, transactions, cards |
-| Subscription cards | add, delete, change primary |
-| Saved cards | token enrollment, CIT, MIT/MOTO |
-| Post-payment | refund, void, capture |
-| Inquiry | order/merchant reference, transaction ID |
-| Quick Links | create, cancel |
+| Area                 | Methods                                           |
+| -------------------- | ------------------------------------------------- |
+| Intentions           | create, update, retrieve, checkout URL            |
+| Subscription plans   | create, list, update, suspend, resume             |
+| Subscriptions        | create, retrieve, update, suspend, resume, cancel |
+| Subscription details | last transaction, transactions, cards             |
+| Subscription cards   | add, delete, change primary                       |
+| Saved cards          | token enrollment, CIT, MIT/MOTO                   |
+| Post-payment         | refund, void, capture                             |
+| Inquiry              | order/merchant reference, transaction ID          |
+| Quick Links          | create, cancel                                    |
 
 ## Important production rules
 
